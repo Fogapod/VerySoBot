@@ -1,5 +1,5 @@
 # VerySoBot
-Bot proxy for Keybase, initially created for NotSoBot.
+Discord bot proxy for Keybase, initially created for NotSoBot.
 
 # Usage
 With docker:
