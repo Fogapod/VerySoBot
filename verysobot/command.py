@@ -1,5 +1,7 @@
-from verysobot.response import Response
+import asyncio
 
+from verysobot.response import Response
+from verysobot.antinotsochallenge import antinotsochallenge
 
 # timeout for waiting bot responses
 TIMEOUT = 10
@@ -48,7 +50,7 @@ class Command:
         return self._command in self.EDITING_CMDS
 
     def _prepare(self):
-        return f"{self.PREFIX}{self._body}"
+        return antinotsochallenge(f"{self.PREFIX}{self._body}")
 
     async def deliver(self, channel_id):
         await self._dbot.http.send_message(channel_id, self._prepare())
