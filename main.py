@@ -34,7 +34,6 @@ EDITING_CMDS = {
 # timeout for waiting NotSoBot response
 TIMEOUT = 10
 
-lock = asyncio.Lock()
 queue = asyncio.Queue()
 
 bot = discord.Client()
@@ -147,6 +146,8 @@ class Handler:
 
 
 async def forwarder(kbbot):
+    lock = asyncio.Lock()
+
     while True:
         command, channel = await queue.get()
         async with lock:
