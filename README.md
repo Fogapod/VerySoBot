@@ -13,3 +13,4 @@ $ docker run --env-file=.env fogapod/verysobot
 - Parallel processing of commands with multiple channels
 - Better support for commands
 - Better attachments support
+- Support for other platforms than keybase?
