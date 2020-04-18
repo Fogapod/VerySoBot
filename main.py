@@ -115,7 +115,7 @@ class NotSoResponse:
                 embed_url = embed.thumbnail.url
 
             if embed_url:
-                text = f"{msg.content}\n{embed_url}"
+                text = f"{msg.content}\nUrl from embed: {embed_url}"
             else:
                 text = "Embed, idk"
 
