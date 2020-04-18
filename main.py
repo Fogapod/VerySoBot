@@ -36,13 +36,13 @@ TIMEOUT = 10
 
 queue = asyncio.Queue()
 
-bot = discord.Client()
-
 
 class NotSoCommand:
-    def __init__(self, text, prefix):
+    def __init__(self, text, prefix, dbot):
         self._body = self._strip_prefix(text, prefix)
         self._command = self._get_command(self._body)
+
+        self._dbot = dbot
 
     @staticmethod
     def _strip_prefix(text, prefix):
@@ -65,7 +65,7 @@ class NotSoCommand:
         return f".{self._body}"
 
     async def deliver(self):
-        await bot.http.send_message(CHANNEL_ID, self._prepare())
+        await self._dbot.http.send_message(CHANNEL_ID, self._prepare())
 
     async def wait_response(self, timeout=TIMEOUT):
         def _location_check(msg):
@@ -79,13 +79,17 @@ class NotSoCommand:
 
         try:
             if self.editing:
-                _, msg = await bot.wait_for(
+                _, msg = await self._dbot.wait_for(
                     "message_edit",
                     timeout=timeout,
                     check=editing_check
                 )
             else:
-                msg = await bot.wait_for("message", timeout=timeout, check=check)
+                msg = await self._dbot.wait_for(
+                    "message",
+                    timeout=timeout,
+                    check=check
+                )
         except asyncio.TimeoutError:
             return NotSoResponse("Timed out", None)
 
@@ -126,6 +130,9 @@ class NotSoResponse:
 
 
 class Handler:
+    def __init__(self, dbot):
+        self._dbot = dbot
+
     async def __call__(self, bot, event):
         if event.msg.content.type_name != chat1.MessageTypeStrings.TEXT.value:
             return
@@ -134,7 +141,7 @@ class Handler:
         lower_text = text.lower()
         for prefix in PREFIXES:
             if lower_text.startswith(prefix):
-                command = NotSoCommand(text, prefix)
+                command = NotSoCommand(text, prefix, self._dbot)
                 break
         else:
             return
@@ -145,34 +152,32 @@ class Handler:
         await queue.put((command, event.msg.conv_id))
 
 
-async def forwarder(kbbot):
-    lock = asyncio.Lock()
-
+async def forwarder(dbot, kbbot):
     while True:
         command, channel = await queue.get()
-        async with lock:
-            await command.deliver()
-            response = await command.wait_response()
+        await command.deliver()
+        response = await command.wait_response()
   
-            if response.attachment:
-                # bad
-                filename = f"/tmp/{round(time.time())}"
+        if response.attachment:
+            # bad
+            filename = f"/tmp/{round(time.time())}"
 
-                await response.attachment.save(filename)
-                await kbbot.chat.attach(channel, filename, response.text)
+            await response.attachment.save(filename)
+            await kbbot.chat.attach(channel, filename, response.text)
 
-                os.remove(filename)
-            else:
-                await kbbot.chat.send(channel, response.text)
+            os.remove(filename)
+        else:
+            await kbbot.chat.send(channel, response.text)
 
         
 if __name__ == "__main__":
-    kbbot = KBBot(handler=Handler())
+    dbot = discord.Client()
+    kbbot = KBBot(handler=Handler(dbot))
 
     loop = asyncio.get_event_loop()
 
-    loop.create_task(bot.start(os.environ["DISCORD_TOKEN"], bot=False))
+    loop.create_task(dbot.start(os.environ["DISCORD_TOKEN"], bot=False))
     loop.create_task(kbbot.start({}))
-    loop.create_task(forwarder(kbbot))
+    loop.create_task(forwarder(dbot, kbbot))
 
     loop.run_forever()
