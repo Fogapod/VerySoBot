@@ -21,5 +21,5 @@ RUN addgroup -S verysobot && \
 USER verysobot
 
 ENTRYPOINT ["./entrypoint.sh"]
-CMD ["python", "main.py"]
+CMD ["python", "-m", "verysobot"]
 

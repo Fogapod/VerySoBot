@@ -1,8 +1,3 @@
-# KEYBASE_USERNAME and KEYBASE_PAPERKEY env vars are required to run keybase bot
-# DISCORD_TOKEN env var is required to run discord bot
-
-# TODO: running commands on a private server in multiple channels in parallel
-
 import os
 import time
 import asyncio
