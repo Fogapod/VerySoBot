@@ -1,3 +1,7 @@
+# KEYBASE IS DEAD
+
+and so is this project
+
 # VerySoBot
 Discord bot proxy for Keybase, initially created for NotSoBot.
 
